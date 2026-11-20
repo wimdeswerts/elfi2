@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elfi</title>
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body class="opts">
+<form id="login">
+  <label><span data-i18n="loginName">Naam</span> <input id="name" autocomplete="username" autocapitalize="none" required autofocus></label>
+  <label><span data-i18n="loginPassword">Wachtwoord</span> <span class="pw"><input id="password" type="password" autocomplete="current-password" required><button type="button" id="showPw" aria-label="Show password"></button></span></label>
+  <button id="loginButton" data-i18n="loginButton">Start</button>
+  <p id="loginMsg" role="alert"></p>
+</form>
+<script type="module" src="/dist/login.js"></script>
+</body>
+</html>

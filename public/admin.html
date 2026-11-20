@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Elfi</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <header>
+    <h1 data-i18n="stats"></h1>
+    <div class="tools"><a href="/" data-i18n="back"></a></div>
+  </header>
+  <table class="stats">
+    <thead><tr><th data-i18n="operation"></th><th data-i18n="correct"></th><th data-i18n="failure"></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <p id="error" role="alert"></p>
+  <script type="module" src="/dist/admin.js"></script>
+</body>
+</html>
