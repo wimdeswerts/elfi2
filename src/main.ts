@@ -4,7 +4,7 @@ import { applyI18n, t } from './i18n.js';
 import { load } from './settings.js';
 
 const NS = 'http://www.w3.org/2000/svg';
-const COL = 120, H = 440, R = 26;
+const COL = 120, H = 440, R = 26, PAD = 40;
 
 const settings = load();
 let game: Game = newGame(settings);
@@ -32,7 +32,8 @@ const el = (name: string, attrs: Record<string, string | number> = {}, parent?: 
 function pos(id: number) {
   const n = game.graph.nodes[id];
   const size = game.graph.layers[n.layer].length;
-  return { x: COL / 2 + n.layer * COL, y: (H * (n.row + 1)) / (size + 1) };
+  // first and last node of a layer sit PAD from the edge (little empty space above and below the board)
+  return { x: COL / 2 + n.layer * COL, y: size === 1 ? H / 2 : PAD + ((H - 2 * PAD) * n.row) / (size - 1) };
 }
 
 // New game: focus the first child of the source, so the player can type straight away.
