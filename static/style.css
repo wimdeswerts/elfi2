@@ -17,7 +17,6 @@ header { display: flex; justify-content: space-between; align-items: center; }
 .embed header { justify-content: center; }
 
 .stage { position: relative; }
-.stage .icon-btn { position: absolute; right: 10px; bottom: 10px; }
 #board { display: block; width: 100%; height: auto; background: #f4f1e8; border-radius: 8px; }
 .icon-btn { display: grid; place-items: center; padding: 0; width: max(36px, var(--node, 52px)); height: max(36px, var(--node, 52px)); border: 0; border-radius: 50%; color: #fff; cursor: pointer;
   background: linear-gradient(135deg, #5b9df0, #3a5fcd); box-shadow: 0 3px 8px rgba(58, 95, 205, .45);
@@ -99,4 +98,5 @@ foreignObject input { width: 100%; box-sizing: border-box; height: 100%; font-si
 #dots i { width: 18px; height: 18px; box-sizing: border-box; border: 3px solid #2b2350; border-radius: 50%; }
 #dots i.full { background: oklch(0.78 0.15 55); }
 header:has(#dots) { padding: 1.5rem .75rem .75rem; background: #f4f1e8; border-radius: 8px 8px 0 0; } /* breathing space above the dots and buttons; same background as #board, which it joins */
-header:has(#dots) + .stage #board { border-radius: 0 0 8px 8px; }
+header:has(#dots) + .stage #board { border-radius: 0; }
+footer { display: flex; justify-content: flex-end; padding: .75rem; background: #f4f1e8; border-radius: 0 0 8px 8px; } /* same background as the header and #board */
