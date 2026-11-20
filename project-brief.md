@@ -18,7 +18,7 @@ It is up to the player to choose a path in the graph towards the sink node.
 - Number range: 0-10, 0-50, 0-100, 0-1000 or custom (whole numbers, 0 to 1,000,000, at least 3 apart). Default 0-100.
 - Allowed operations: any non-empty selection of +, -, ×, :. Default: all four.
 - Max child nodes per parent: 2 to 5. Default 2. (Replaces the fixed maximum of 2 in the MVP text.)
-- Max number of nodes: 10 to 100, default 30. The graph has exactly this many nodes. (Replaces the "at least 25 nodes" in the MVP text.)
+- Max number of nodes: 10 to 100, default 15. The graph has exactly this many nodes. (Replaces the "at least 25 nodes" in the MVP text.)
 - No sound: nothing plays when the sink is reached (an optional tune was tried and removed).
 - A wrong answer can be retried without limit. A wrong answer is shown only by the node's colour, there is no error text.
 - Languages: Dutch (NL, default) and English (EN). Selectable on the Options page only.
@@ -49,7 +49,7 @@ Not defined yet.
 
 ## Login
 
-The whole app (pages, `/dist` except the login modules, and the API) requires a login, copied from Elfi1: `/login` (name + password, "Start", eye button to show the password). Name and password ignore case. Users are created by an admin only (`pnpm add-user <name>`) and live in MongoDB Atlas (db `elfi` or `MONGODB_DB`, collection `users`). Five wrong passwords lock a name for 5 minutes. A successful login sets a signed HttpOnly `elfi2-session` cookie (30 days); the game header has a Log out button. Settings go in the git-ignored `.env`: `MONGODB_URI` (may contain `<USER>`/`<PASSWORD>`, filled from `DATABASE_USER`/`DATABASE_PASSWORD`), `MONGODB_DB`, `SESSION_SECRET`. Without a database or secret nobody gets in.
+The whole app (pages, `/dist` except the login modules, and the API) requires a login, copied from Elfi1: `/login` (name + password, "Start", eye button to show the password). Name and password ignore case. Users are created by an admin only (`pnpm add-user <name>`) and live in MongoDB Atlas (db `elfi` or `MONGODB_DB`, collection `users`). Five wrong passwords lock a name for 5 minutes. A successful login sets a signed HttpOnly `elfi2-session` cookie (30 days); the game header has a Stop button (logs out). Settings go in the git-ignored `.env`: `MONGODB_URI` (may contain `<USER>`/`<PASSWORD>`, filled from `DATABASE_USER`/`DATABASE_PASSWORD`), `MONGODB_DB`, `SESSION_SECRET`. Without a database or secret nobody gets in.
 
 ## Reward movie
 

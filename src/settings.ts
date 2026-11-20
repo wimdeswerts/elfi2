@@ -5,7 +5,7 @@ export interface Settings extends Options { lang: Lang; movie: boolean }
 
 const KEY = 'elfi2';
 export const MAX_CHILDREN_LIMIT = 5;
-export const DEFAULTS: Settings = { lang: 'nl', min: 0, max: 100, ops: [...ALL_OPS], maxChildren: 2, maxNodes: 30, movie: true };
+export const DEFAULTS: Settings = { lang: 'nl', min: 0, max: 100, ops: [...ALL_OPS], maxChildren: 2, maxNodes: 15, movie: true };
 
 // 10 is the smallest graph the layered generator builds sensibly
 export const validNodes = (n: number): boolean => Number.isInteger(n) && n >= 10 && n <= 100;
