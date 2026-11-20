@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 });
 app.get('/login', (_req, res) => res.sendFile(path.join(root, 'static', 'login.html')));
 app.use('/dist', express.static(path.join(root, 'dist')));
-app.use(express.static(path.join(root, 'static')));
+app.use(express.static(path.join(root, 'static'), { extensions: ['html'] })); // cleanUrls on Vercel redirects /options.html to /options
 app.get('/admin', (_req, res) => res.sendFile(path.join(root, 'static', 'admin.html')));
 app.get('/api/stats', async (_req, res) => {
   try {
