@@ -1,26 +1,20 @@
 import express from 'express';
-import fs from 'node:fs';
 import path from 'node:path';
 import { SESSION_DAYS, makeSession, readSession, userKey, validName } from './auth.js';
-import { login } from './users.js';
+import { database, login } from './users.js';
 
 try { process.loadEnvFile(); } catch { /* no .env file */ }
 
 const root = path.join(import.meta.dirname, '..');
 const OPS = ['+', '-', '*', '/'];
-const FILE = path.join(root, 'data', 'stats.json');
-
-// Counts only (no player data). Kept in memory and mirrored to data/stats.json.
-const stats: Record<string, { correct: number; failure: number }> = Object.fromEntries(OPS.map(o => [o, { correct: 0, failure: 0 }]));
-try {
-  const saved = JSON.parse(fs.readFileSync(FILE, 'utf-8'));
-  for (const o of OPS) Object.assign(stats[o], { correct: saved[o].correct | 0, failure: saved[o].failure | 0 });
-} catch { /* first run or unreadable file: start from zero */ }
+// Counts only (no player data), kept in MongoDB (collection 'elfi2_stats', one document per operation): Vercel has no writable disk.
+const statsCollection = async () => (await database()).collection<{ _id: string; correct: number; failure: number }>('elfi2_stats');
 
 const COOKIE = 'elfi2-session';
 const cookieOf = (header: string | undefined) => header?.split(';').map(c => c.trim()).find(c => c.startsWith(`${COOKIE}=`))?.slice(COOKIE.length + 1);
 
 const app = express();
+app.set('trust proxy', 1); // behind Vercel's proxy: req.secure follows X-Forwarded-Proto
 app.post('/api/login', express.json({ limit: '1kb' }), async (req, res) => {
   const { name, password } = (req.body ?? {}) as Record<string, unknown>;
   if (typeof name !== 'string' || typeof password !== 'string' || !validName(name) || password.length > 200) return void res.sendStatus(401);
@@ -44,17 +38,26 @@ app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) return void res.sendStatus(401);
   res.redirect('/login');
 });
-app.get('/login', (_req, res) => res.sendFile(path.join(root, 'public', 'login.html')));
+app.get('/login', (_req, res) => res.sendFile(path.join(root, 'static', 'login.html')));
 app.use('/dist', express.static(path.join(root, 'dist')));
-app.use(express.static(path.join(root, 'public')));
-app.get('/admin', (_req, res) => res.sendFile(path.join(root, 'public', 'admin.html')));
-app.get('/api/stats', (_req, res) => res.json(stats));
-app.post('/api/stats', express.json(), (req, res) => {
+app.use(express.static(path.join(root, 'static')));
+app.get('/admin', (_req, res) => res.sendFile(path.join(root, 'static', 'admin.html')));
+app.get('/api/stats', async (_req, res) => {
+  try {
+    const rows = await (await statsCollection()).find().toArray();
+    res.json(Object.fromEntries(OPS.map(o => [o, { correct: rows.find(r => r._id === o)?.correct ?? 0, failure: rows.find(r => r._id === o)?.failure ?? 0 }])));
+  } catch { res.sendStatus(503); }
+});
+app.post('/api/stats', express.json(), async (req, res) => {
   const { op, correct } = req.body ?? {};
   if (!OPS.includes(op) || typeof correct !== 'boolean') return void res.sendStatus(400);
-  stats[op][correct ? 'correct' : 'failure']++;
-  fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(stats));
-  res.sendStatus(204);
+  try {
+    await (await statsCollection()).updateOne({ _id: op }, { $inc: { [correct ? 'correct' : 'failure']: 1 } }, { upsert: true });
+    res.sendStatus(204);
+  } catch { res.sendStatus(503); }
 });
-app.listen(Number(process.env.PORT) || 3000, () => console.log('http://localhost:3000'));
+export default app; // Vercel runs the exported app as a function
+if (!process.env.VERCEL) {
+  const port = Number(process.env.PORT) || 3000;
+  app.listen(port, () => console.log(`http://localhost:${port}`));
+}

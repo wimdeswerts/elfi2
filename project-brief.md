@@ -40,7 +40,7 @@ HTML, CSS and TypeScript 6 (no framework) for the frontend. Node + Express for t
 Current layout (compiled with `tsc` to `dist/`, ES modules):
 
 - `src/`: `graph.ts` (graph generator), `game.ts` (rules), `settings.ts` and `i18n.ts` (options and NL/EN texts), `main.ts` / `options.ts` / `admin.ts` (the three pages), `server.ts` (Express), `elfi.test.ts` (tests, `node:test`).
-- `public/`: `index.html`, `options.html`, `admin.html`, `style.css`.
+- `static/`: `index.html`, `options.html`, `admin.html`, `style.css`.
 - Package manager: pnpm (not npm). Commands: `pnpm install`, `pnpm start` (build and run, then open http://localhost:3000) and `pnpm test` (build and run the tests).
 
 ## 4. What's the long-term vision, beyond this MVP?
@@ -53,4 +53,4 @@ The whole app (pages, `/dist` except the login modules, and the API) requires a 
 
 ## Reward movie
 
-When every node of a game is correctly calculated, a modal plays `public/firework.mp4` (about 10 s, fireworks and festive music; supplied by the owner, stored in the repo and deployed with the app). Click or Esc closes it. The options page has a checkbox (default on) to switch it off. The game page has no title heading, and the browser tab title is "Elfi"; the favicon is a smiley on a blue background. If the file is missing or cannot play, the reward is silently skipped.
+When every node of a game is correctly calculated, a modal plays `static/firework.mp4` (about 10 s, fireworks and festive music; supplied by the owner, stored in the repo and deployed with the app). Click or Esc closes it. The options page has a checkbox (default on) to switch it off. The game page has no title heading, and the browser tab title is "Elfi"; the favicon is a smiley on a blue background. If the file is missing or cannot play, the reward is silently skipped.

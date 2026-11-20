@@ -18,10 +18,11 @@ export function mongoUri(env = process.env): string {
 }
 
 let connection: Promise<MongoClient> | undefined; // reused between requests of a warm serverless instance
-const users = async () => {
+export const database = async () => {
   connection ??= new MongoClient(mongoUri()).connect();
-  return (await connection).db(process.env.MONGODB_DB || 'elfi').collection<User>('users');
+  return (await connection).db(process.env.MONGODB_DB || 'elfi');
 };
+const users = async () => (await database()).collection<User>('users');
 
 const dummy = hashPassword('no such user'); // checked for unknown names, so they take as long as a wrong password
 
