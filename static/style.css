@@ -100,3 +100,5 @@ foreignObject input { width: 100%; box-sizing: border-box; height: 100%; font-si
 header:has(#dots) { padding: 1.5rem .75rem .75rem; background: #f4f1e8; border-radius: 8px 8px 0 0; } /* breathing space above the dots and buttons; same background as #board, which it joins */
 header:has(#dots) + .stage #board { border-radius: 0; }
 footer { display: flex; justify-content: flex-end; padding: .75rem; background: #f4f1e8; border-radius: 0 0 8px 8px; } /* same background as the header and #board */
+/* Edge draws its own reveal-password eye in password fields: hide it, the page has its own button */
+#password::-ms-reveal, #password::-ms-clear { display: none; }
