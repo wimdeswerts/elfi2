@@ -27,11 +27,13 @@ header { display: flex; justify-content: space-between; align-items: center; }
 .icon-btn:active { transform: translateY(1px) scale(.95); box-shadow: 0 1px 3px rgba(58, 95, 205, .5); }
 .icon-btn:focus-visible { outline: 3px solid #ffb703; outline-offset: 2px; }
 
-.edge { stroke: #aaa; stroke-width: 2; }
-.edge.active { stroke: #2c3e50; stroke-width: 3; }
-.edge-label { font-size: 17px; font-weight: 700; fill: #2c3e50; paint-order: stroke; stroke: #f4f1e8; stroke-width: 5px; }
+.edge { stroke: #aaa; stroke-width: 1.5; }
+.edge.active { stroke: #2c3e50; stroke-width: 2.5; }
+.edge-label { font-size: 14px; font-weight: 700; fill: #2c3e50; paint-order: stroke; stroke: #f4f1e8; stroke-width: 5px; }
 .node circle { stroke: #555; stroke-width: 2; }
 .node text { font-size: 18px; font-weight: 700; pointer-events: none; }
+/* a scratch note (unchecked number) in an intermediate node */
+.node.note text { fill: #aaa; }
 .node.locked circle { fill: #ddd; }
 .node.available circle { fill: #fff; cursor: pointer; }
 .node.available, .node.assigned, .node.wrong { cursor: pointer; }
@@ -84,11 +86,11 @@ foreignObject input { width: 100%; box-sizing: border-box; height: 100%; font-si
 #reward::backdrop { background: rgba(43, 35, 80, .75); }
 #reward video { display: block; max-width: 90vw; max-height: 85vh; }
 /* on/off slider (a checkbox drawn as a switch) */
-#movie { appearance: none; position: relative; width: 4rem; height: 2.2rem; margin: 0; border: var(--border); border-radius: 999px; background: #fff; cursor: pointer; transition: background .15s; }
-#movie::after { content: ""; position: absolute; top: 50%; left: .2rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--ink); transform: translateY(-50%); transition: left .15s; }
-#movie:checked { background: var(--teal); }
-#movie:checked::after { left: 1.9rem; }
-#movie:focus-visible { outline: 5px solid var(--orange); outline-offset: 2px; }
+#movie, #mode, #scratch { appearance: none; position: relative; width: 4rem; height: 2.2rem; margin: 0; border: var(--border); border-radius: 999px; background: #fff; cursor: pointer; transition: background .15s; }
+#movie::after, #mode::after, #scratch::after { content: ""; position: absolute; top: 50%; left: .2rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--ink); transform: translateY(-50%); transition: left .15s; }
+#movie:checked, #mode:checked, #scratch:checked { background: var(--teal); }
+#movie:checked::after, #mode:checked::after, #scratch:checked::after { left: 1.9rem; }
+#movie:focus-visible, #mode:focus-visible, #scratch:focus-visible { outline: 5px solid var(--orange); outline-offset: 2px; }
 /* the answered sink: pulses with a golden glow */
 .node.sink.assigned { animation: sink-glow 1.4s ease-in-out infinite; }
 @keyframes sink-glow { 0%, 100% { filter: drop-shadow(0 0 2px gold); } 50% { filter: drop-shadow(0 0 10px orange); } }

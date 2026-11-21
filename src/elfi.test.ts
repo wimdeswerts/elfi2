@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { answer, newGame, won } from './game.js';
+import { answer, answerSink, newGame, won } from './game.js';
 import { ALL_OPS, apply, generate, type Op, type Options, type Range } from './graph.js';
 
 const ranges: Range[] = [{ min: 0, max: 10 }, { min: 0, max: 50 }, { min: 0, max: 100 }, { min: 0, max: 1000 }, { min: 40, max: 44 }];
@@ -45,4 +45,16 @@ test('answers: wrong is retryable, right is stored, sink wins', () => {
     cur = next.to;
   }
   assert.ok(won(game));
+});
+
+test('sink variant: every route gives the sink value, a correct answer reveals the graph', () => {
+  const game = newGame(opts(ranges[2]));
+  const g = game.graph;
+  const walk = (id: number, v: number): void => {
+    if (id === g.sink) return assert.equal(v, g.nodes[g.sink].value);
+    for (const e of g.edges.filter(x => x.from === id)) walk(e.to, apply(e.op, v, e.n));
+  };
+  walk(g.source, g.nodes[g.source].value);
+  assert.ok(!answerSink(game, g.nodes[g.sink].value + 1) && game.wrong.has(g.sink));
+  assert.ok(answerSink(game, g.nodes[g.sink].value) && won(game) && game.values.every(v => v !== null));
 });

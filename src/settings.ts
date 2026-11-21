@@ -1,11 +1,12 @@
 import { ALL_OPS, type Op, type Options } from './graph.js';
 
 export type Lang = 'nl' | 'en';
-export interface Settings extends Options { lang: Lang; movie: boolean }
+export type Mode = 'steps' | 'sink'; // steps: answer every node; sink: all arrows shown, answer only the sink
+export interface Settings extends Options { lang: Lang; movie: boolean; mode: Mode; scratch: boolean }
 
 const KEY = 'elfi2';
 export const MAX_CHILDREN_LIMIT = 5;
-export const DEFAULTS: Settings = { lang: 'nl', min: 0, max: 100, ops: [...ALL_OPS], maxChildren: 2, maxNodes: 15, movie: true };
+export const DEFAULTS: Settings = { lang: 'nl', min: 0, max: 100, ops: [...ALL_OPS], maxChildren: 2, maxNodes: 15, movie: true, mode: 'steps', scratch: false };
 
 // 10 is the smallest graph the layered generator builds sensibly
 export const validNodes = (n: number): boolean => Number.isInteger(n) && n >= 10 && n <= 100;
@@ -30,6 +31,8 @@ export function load(): Settings {
       maxChildren: validChildren(s.maxChildren) ? s.maxChildren : DEFAULTS.maxChildren,
       maxNodes: validNodes(s.maxNodes) ? s.maxNodes : DEFAULTS.maxNodes,
       movie: s.movie !== false,
+      mode: s.mode === 'sink' ? 'sink' : 'steps',
+      scratch: s.scratch === true,
     };
   } catch {
     return { ...DEFAULTS };

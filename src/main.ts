@@ -1,5 +1,5 @@
 import { label } from './graph.js';
-import { answer, edgeBetween, newGame, type Game } from './game.js';
+import { answer, answerSink, edgeBetween, newGame, type Game } from './game.js';
 import { applyI18n, t } from './i18n.js';
 import { load } from './settings.js';
 
@@ -10,6 +10,7 @@ const settings = load();
 let game: Game = newGame(settings);
 let selected: number | null = null; // assigned parent whose arrows are shown
 let editing: number | null = null; // child node with an open input
+const notes = new Map<number, string>(); // sink variant with scratch notes: unvalidated numbers in intermediate nodes
 
 const reward = document.querySelector<HTMLDialogElement>('#reward')!;
 const movie = reward.querySelector('video')!;
@@ -39,15 +40,33 @@ function pos(id: number) {
 // New game: focus the first child of the source, so the player can type straight away.
 function start() {
   game = newGame(settings);
+  notes.clear();
   const first = game.graph.edges.find(e => e.from === game.graph.source);
-  selected = first?.from ?? null;
-  editing = first?.to ?? null;
+  selected = sinkMode() ? null : first?.from ?? null;
+  editing = sinkMode() ? game.graph.sink : first?.to ?? null;
 }
 
+const sinkMode = () => settings.mode === 'sink';
+
 function submit(child: number, text: string) {
+  if (sinkMode() && child !== game.graph.sink) { // scratch note: never checked
+    const v = text.trim();
+    if (v !== '' && !Number.isInteger(Number(v))) return;
+    if (v) notes.set(child, v); else notes.delete(child);
+    editing = null;
+    render();
+    return;
+  }
   const n = Number(text);
   if (text.trim() === '' || !Number.isInteger(n)) return;
   editing = null;
+  if (sinkMode()) { // no per-operation statistics: the answer covers a whole route
+    const correct = answerSink(game, n);
+    editing = correct ? null : child;
+    render();
+    if (correct && settings.movie) setTimeout(() => reward.showModal(), 1500);
+    return;
+  }
   const op = edgeBetween(game, selected!, child)!.op;
   const correct = answer(game, selected!, child, n);
   // fire-and-forget: statistics must never block or break the game
@@ -66,7 +85,10 @@ function submit(child: number, text: string) {
 }
 
 function click(id: number) {
-  if (game.values[id] !== null) {
+  if (sinkMode()) {
+    if (game.values[id] !== null || (id !== game.graph.sink && !(settings.scratch && id !== game.graph.source))) return;
+    editing = id;
+  } else if (game.values[id] !== null) {
     selected = id;
     editing = null;
   } else {
@@ -89,13 +111,13 @@ function render() {
   board.replaceChildren();
   board.setAttribute('viewBox', `0 0 ${g.layers.length * COL} ${H}`);
   const defs = el('defs', {}, board);
-  const marker = el('marker', { id: 'arrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, defs);
+  const marker = el('marker', { id: 'arrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, defs);
   el('path', { d: 'M0 0L10 5L0 10z', fill: 'context-stroke' }, marker);
 
   const labels: [Element, number, number, string][] = [];
   for (const e of g.edges) {
     const a = pos(e.from), b = pos(e.to);
-    const active = e.from === selected;
+    const active = sinkMode() || e.from === selected;
     // straight: arrows only join adjacent layers, so they never run through another node
     const d = Math.hypot(b.x - a.x, b.y - a.y);
     const ux = (b.x - a.x) / d, uy = (b.y - a.y) / d;
@@ -104,26 +126,49 @@ function render() {
       class: active ? 'edge active' : 'edge', 'marker-end': 'url(#arrow)',
     }, board);
     if (active) {
-      // beside the arrow, on its upper side: the label box (about 44 x 22) is pushed out along the normal until it clears the line
-      const side = ux < 0 ? -1 : 1; // normal (uy, -ux), flipped to point up
-      const nx = uy * side, ny = -ux * side;
-      const off = Math.abs(nx) * 24 + Math.abs(ny) * 13;
-      labels.push([board, (a.x + b.x) / 2 + nx * off, (a.y + b.y) / 2 + ny * off, label(e)]);
+      // Beside the arrow, preferably on the side facing the nearest border (upper side in the middle), as near the head as possible.
+      // The label box (44 x 22) must clear every node (and so every arrow head) and the labels already placed;
+      // candidates: the preferred side from head to middle, then the other side. If none is free, take the one with the fewest clashes.
+      const pref = (ux < 0 ? -1 : 1) * ((a.y + b.y) / 2 > H / 2 ? -1 : 1); // normal (uy, -ux) points up when pref is 1
+      // arrow lines count too (other arrows entirely, this one only at its head, which is about 28 long)
+      const hits = (x: number, y: number) => g.edges.filter(o => {
+        const p = pos(o.from), q = pos(o.to), len = Math.hypot(q.x - p.x, q.y - p.y), vx = (q.x - p.x) / len, vy = (q.y - p.y) / len;
+        for (let d = R; d <= len - R - 2; d += 4) {
+          const head = d > len - R - 30;
+          if (o === e && !head) continue;
+          const m = head ? 12 : 4;
+          if (Math.abs(p.x + vx * d - x) < 22 + m && Math.abs(p.y + vy * d - y) < 11 + m) return true;
+        }
+        return false;
+      }).length;
+      const clashes = (x: number, y: number) => hits(x, y) +
+        g.nodes.filter(n => { // box-to-circle distance
+          const c = pos(n.id);
+          return Math.hypot(Math.max(Math.abs(c.x - x) - 22, 0), Math.max(Math.abs(c.y - y) - 11, 0)) < R + 5;
+        }).length + labels.filter(l => Math.abs(l[1] - x) <= 46 && Math.abs(l[2] - y) <= 22).length;
+      const spots = [pref, -pref].flatMap(side => [.7, .62, .54, .46, .38, .3].map(f => {
+        const nx = uy * side, ny = -ux * side, off = Math.abs(nx) * 19 + Math.abs(ny) * 12;
+        return [a.x + (b.x - a.x) * f + nx * off, a.y + (b.y - a.y) * f + ny * off];
+      }));
+      const [x, y] = spots.reduce((best, s) => (clashes(s[0], s[1]) < clashes(best[0], best[1]) ? s : best));
+      labels.push([board, x, y, label(e)]);
     }
   }
 
   for (const n of g.nodes) {
     const { x, y } = pos(n.id);
     const v = game.values[n.id];
-    const reachable = g.edges.some(e => e.to === n.id && game.values[e.from] !== null);
+    const reachable = sinkMode() ? n.id === g.sink || (settings.scratch && n.id !== g.source) : g.edges.some(e => e.to === n.id && game.values[e.from] !== null);
     const cls = ['node', v !== null ? 'assigned' : game.wrong.has(n.id) ? 'wrong' : reachable ? 'available' : 'locked'];
     if (n.id === g.sink) cls.push('sink');
     if (n.id === selected) cls.push('selected');
     if (n.id === editing) cls.push('editing');
+    const note = v === null && n.id !== editing ? notes.get(n.id) : undefined; // while editing, the input shows the note
+    if (note) cls.push('note');
     const grp = el('g', { class: cls.join(' ') }, board);
     grp.addEventListener('click', () => click(n.id));
     el('circle', { cx: x, cy: y, r: R }, grp);
-    el('text', { x, y: y + 6, 'text-anchor': 'middle' }, grp, v !== null ? String(v) : '');
+    el('text', { x, y: y + 6, 'text-anchor': 'middle' }, grp, v !== null ? String(v) : note ?? '');
   }
   // arrow labels last so they sit on top
   for (const [parent, x, y, text] of labels) {
@@ -137,10 +182,18 @@ function render() {
     input.type = 'text';
     input.inputMode = 'numeric';
     input.setAttribute('aria-label', t(settings.lang, 'answer'));
+    input.value = notes.get(editing) ?? '';
     const child = editing;
     input.addEventListener('keydown', ev => {
       if (ev.key === 'Enter') submit(child, input.value);
       if (ev.key === 'Escape') { editing = null; render(); }
+    });
+    // leaving the node keeps an unchecked note; no render here, it would swallow the click that caused the blur
+    input.addEventListener('blur', () => {
+      const v = input.value.trim();
+      if (editing !== child || !sinkMode() || child === game.graph.sink || (v !== '' && !Number.isInteger(Number(v)))) return;
+      if (v) notes.set(child, v); else notes.delete(child);
+      editing = null;
     });
     fo.append(input);
     input.focus();

@@ -26,4 +26,15 @@ export function answer(g: Game, parent: number, child: number, n: number): boole
   return true;
 }
 
+// "Sink" variant: the player computes the sink value in one go. Every route gives the same value (each node has one value), so a correct answer reveals the whole graph.
+export function answerSink(g: Game, n: number): boolean {
+  if (n !== g.graph.nodes[g.graph.sink].value) {
+    g.wrong.add(g.graph.sink);
+    return false;
+  }
+  g.values = g.graph.nodes.map(x => x.value);
+  g.wrong.clear();
+  return true;
+}
+
 export const won = (g: Game): boolean => g.values[g.graph.sink] !== null;

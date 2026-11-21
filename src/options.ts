@@ -16,6 +16,8 @@ const maxIn = document.querySelector<HTMLInputElement>('#max')!;
 const childIn = document.querySelector<HTMLInputElement>('#children')!;
 const nodesIn = document.querySelector<HTMLInputElement>('#nodes')!;
 const movieIn = document.querySelector<HTMLInputElement>('#movie')!;
+const scratchIn = document.querySelector<HTMLInputElement>('#scratch')!;
+const modeSel = document.querySelector<HTMLInputElement>('#mode')!;
 const opBoxes = ALL_OPS.map(op => document.querySelector<HTMLInputElement>(`#op-${ALL_OPS.indexOf(op)}`)!);
 const error = document.querySelector<HTMLElement>('#error')!;
 
@@ -35,6 +37,8 @@ function update() {
   if (validNodes(nodesIn.valueAsNumber)) settings.maxNodes = nodesIn.valueAsNumber; else errors.push('nodesError');
 
   settings.movie = movieIn.checked;
+  settings.mode = modeSel.checked ? 'sink' : 'steps';
+  settings.scratch = scratchIn.checked;
   settings.lang = langSel.value as Lang;
   save(settings);
   applyI18n(settings.lang);
@@ -49,8 +53,10 @@ maxIn.valueAsNumber = settings.max;
 childIn.valueAsNumber = settings.maxChildren;
 nodesIn.valueAsNumber = settings.maxNodes;
 movieIn.checked = settings.movie;
+modeSel.checked = settings.mode === 'sink';
+scratchIn.checked = settings.scratch;
 opBoxes.forEach((box, i) => (box.checked = settings.ops.includes(ALL_OPS[i])));
-[langSel, rangeSel, minIn, maxIn, childIn, nodesIn, movieIn, ...opBoxes].forEach(e => e.addEventListener('input', update));
+[langSel, rangeSel, minIn, maxIn, childIn, nodesIn, movieIn, modeSel, scratchIn, ...opBoxes].forEach(e => e.addEventListener('input', update));
 
 applyI18n(settings.lang);
 custom.hidden = rangeSel.value !== 'custom';

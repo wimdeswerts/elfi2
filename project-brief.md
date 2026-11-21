@@ -20,6 +20,8 @@ It is up to the player to choose a path in the graph towards the sink node.
 - Max child nodes per parent: 2 to 5. Default 2. (Replaces the fixed maximum of 2 in the MVP text.)
 - Max number of nodes: 10 to 100, default 15. The graph has exactly this many nodes. (Replaces the "at least 25 nodes" in the MVP text.)
 - No sound: nothing plays when the sink is reached (an optional tune was tried and removed).
+- Game variant (option, a switch "fill in only the end node", off by default = the rules above). When on: the source is random, all arrow calculations are shown at once, only the sink accepts input (the nodes in between stay empty), and a correct answer reveals every node. Every route gives the same sink value because each node has one value. No per-operation statistics in this variant. Extra option: the intermediate nodes accept a number too (a scratch note, never validated; only the sink is checked).
+- Arrow labels sit beside their arrow as near the head as possible, on the border side first and else on the other side, and never overlap a node, any arrow (this one only at its head) or another label (if no spot is free, the one with the fewest clashes).
 - A wrong answer can be retried without limit. A wrong answer is shown only by the node's colour, there is no error text.
 - Languages: Dutch (NL, default) and English (EN). Selectable on the Options page only.
 - Statistics page at `/admin`: correct and failed answers per operation, counted over all players, stored on the server in `data/stats.json`. No login yet.
