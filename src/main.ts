@@ -177,7 +177,7 @@ function fitFrame() {
     body.ownerDocument.documentElement.style.overflow = frame.offsetWidth < Math.ceil(width) || frame.offsetHeight < Math.ceil(height) ? 'auto' : 'hidden';
   }).observe(body);
 }
-frame.addEventListener('load', fitFrame);
+frame.addEventListener('load', () => { fitting = false; fitFrame(); }); // a reload makes a new document: the old observer watches a dead body
 fitFrame(); // the iframe may have finished loading before this script ran
 // The options live in localStorage (written by the iframe): reload them and start a fresh game.
 dlg.addEventListener('close', () => {
